@@ -111,7 +111,7 @@ abstract class ParameterBuilder {
     private var index = 1
 
     protected fun add(name: String, dbType: DbType, value: Any?) {
-        parameters.add(NamedDbParameter(name, index, dbType, value))
+        parameters.add(DbParameter(name, index, dbType, value))
         index++
     }
 }

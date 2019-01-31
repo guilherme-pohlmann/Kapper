@@ -4,7 +4,6 @@ import java.sql.CallableStatement
 import java.sql.Connection
 import java.sql.PreparedStatement
 
-
 class DbCommand(
     private val connection: Connection,
     val commandText: String,
@@ -13,18 +12,34 @@ class DbCommand(
     val parameters: List<DbParameter> = emptyList()
 ) {
 
+    val innerStatement by lazy(::buildStatement)
+
     private fun buildStatement(): PreparedStatement {
-        val statement = if(commandType == CommandType.Text) connection.prepareStatement(commandText) else connection.prepareCall(commandText)
+        val statement = createStatement()
 
         if(commandTimeout != null) {
             statement.queryTimeout = commandTimeout
         }
 
-        parameters.forEach {
-            it.set(statement)
+        if(statement is CallableStatement) {
+            parameters.forEach {
+                statement.setObject(it.name, it.value, it.type.value)
+            }
+        }
+        else {
+            parameters.forEach {
+                statement.setObject(it.index, it.value, it.type.value)
+            }
         }
 
         return statement
+    }
+
+    private fun createStatement(): PreparedStatement {
+        return if(commandType == CommandType.Text)
+            connection.prepareStatement(commandText)
+        else
+            connection.prepareCall(commandText)
     }
 
     fun executeReader(): DataReader {
@@ -37,51 +52,28 @@ enum class CommandType {
     StoredProcedure
 }
 
-abstract class DbParameter(val type: DbType, val value: Any?) {
-    abstract fun set(statement: PreparedStatement)
-}
-
-open class IndexedDbParameter(private val index: Int, type: kapper.DbType, value: Any?): DbParameter(type, value) {
-    override fun set(statement: PreparedStatement) {
-        statement.setObject(index, value, type.value)
-    }
-}
-
-class NamedDbParameter(private val name: String, index: Int, type: kapper.DbType, value: Any?): IndexedDbParameter(index,type, value) {
-    override fun set(statement: PreparedStatement) {
-        if(statement is CallableStatement) {
-            statement.setObject(name, value, type.value)
-        }
-        else {
-            super.set(statement)
-        }
-    }
-}
+class DbParameter(val name: String, val index: Int, val type: DbType, val value: Any?)
 
 enum class DbType(val value: Int) {
     BIT(-7),
     TINYINT(-6),
     BIGINT(-5),
-    LONGVARBINARY(-4),
-    VARBINARY(-3),
-    BINARY(-2),
-    LONGVARCHAR(-1),
-    NULL(0),
+    //LONGVARBINARY(-4),
+    //VARBINARY(-3),
+    //BINARY(-2),
+    //LONGVARCHAR(-1),
+    //NULL(0),
     CHAR(1),
-    NUMERIC(2),
+    //NUMERIC(2),
     DECIMAL(3),
     INTEGER(4),
     SMALLINT(5),
     FLOAT(6),
-    REAL(7),
+    //REAL(7),
     DOUBLE(8),
     VARCHAR(12),
     DATE(91),
     TIME(92),
     TIMESTAMP(93),
     OTHER(1111);
-
-    companion object {
-        fun fromInt(value: Int) = DbType.values().firstOrNull { it.value == value } ?: DbType.OTHER
-    }
 }

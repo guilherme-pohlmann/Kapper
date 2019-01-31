@@ -12,6 +12,7 @@ import java.lang.invoke.ConstantCallSite
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.lang.reflect.Constructor
+import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.util.*
 import kotlin.reflect.*
@@ -310,7 +311,7 @@ internal object AsmMapper : ClassLoader(Thread.currentThread().contextClassLoade
 
         mv.visitLabel(l0)
 
-        if(constructor.canAccess(null)) {
+        if(constructor.isAccessible || Modifier.isPublic(constructor.modifiers)) {
             mv.visitTypeInsn(NEW, target.byteCodeName())
             mv.visitInsn(DUP)
 
