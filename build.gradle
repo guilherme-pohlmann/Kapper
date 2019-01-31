@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.3.10'
+    id "com.adarshr.test-logger" version "1.6.0"
 }
 
 version '1.0-SNAPSHOT'
@@ -27,4 +28,18 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+testlogger {
+    theme 'standard'
+    showExceptions true
+    slowThreshold 0
+    showSummary true
+    showPassed true
+    showSkipped true
+    showFailed true
+    showStandardStreams false
+    showPassedStandardStreams true
+    showSkippedStandardStreams true
+    showFailedStandardStreams true
 }
