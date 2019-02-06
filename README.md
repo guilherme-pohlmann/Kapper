@@ -35,13 +35,13 @@ val list = con.execute<Person> {
 
 ``` 
 
-Internally, generates a `Mapper Class` specific for this Query and this return type (`Person`).
+Internally, it generates a `Mapper Class` specific for this Query and return type (`Person`).
 The decompiled Mapper Class bytecode will look like this:
 
 ```java
 
 //The number is a hash genereted by Kapper for this map.
-public class PessoaMapper8791156489 {
+public class PersonMapper8791156489 {
     public static Person mapper(ResultSet result) throws SQLException {
         return new Person(result.getString("name"), result.getInt("age"));
     }
@@ -51,16 +51,16 @@ public class PessoaMapper8791156489 {
 
 Things to note:
 
-- The check for rows on the `ResultSet` is done earlier, so whenever it gets in the mapper, it has rows.
-- This mapper is calling the constructor directly, because the class declared a constructor that matches all returned rows. If that was not da case, Kapper will look for a parameterless constructor, invoke it, and generate code to map property by property, calling its setters.
+- The check for rows on the `ResultSet` is made beforehand, so whenever it calls the mapper, it has rows.
+- This mapper is calling the constructor directly, because the class declared a constructor that matches all returned rows. If that was not the case, Kapper will look for a parameterless constructor, invoke it, and generate code to map property by property, calling its setters.
 - The parameterless constructor doesn't have to be public, however, non public constructor may have a little performance impact.
-- It also work if you provide a constructor with default values for all properties.
+- It also works if you provide a constructor with default values for all properties.
 
 ## Features
 
 The current implementation provides the extension function `execute` to JDBC `Connection` class. 
 The function takes a DSL that allow the user to provide the query and named parameters (as shown above).
-Even though the DSL allows named parameters, for now it uses JDBC positional parameters.
+Even though named parameters are allowed in the DSL, for now it uses JDBC positional parameters.
 
 
 ## The future
